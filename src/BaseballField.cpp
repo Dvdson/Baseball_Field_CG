@@ -5,40 +5,45 @@
 
 using namespace std;
 
-//< Data of the cicle >
+//< Data of the external cicle >
 int xCenter = 384;
 int yCenter = 580;
 int radius = 270;
-int pointAmount = 128;
+int pointAmount = 1024;
 float theta;
 float cx;
 float cy;
-//</ Data of the cicle >
+//</ Data of the external cicle >
 
-//<Data of the lines>
+//<Data of the external lines>
 float dx = ((xCenter+radius) - xCenter) / (float)pointAmount;
 float dy = (yCenter - (yCenter+radius)) / (float)pointAmount;
 float  jdx,jdy;
-//</Data of the lines>
+//</Data of the external lines>
 
-void init(void) {
+//< Data of the internal cicle >
+int xIcenter = xCenter;
+int yIcenter = (yCenter+radius)-200;
+int iRadius = 160;
+int iPointAmount = 128;
+float iTheta;
+float icx = 0;
+float icy = 0;
+//</ Data of the internal cicle >
 
-    glClearColor(0.0, 0.0, 0.0, 0.0);
+//<Data of the internal lines>
+float idx = ((xIcenter+iRadius) - xIcenter) / (float)iPointAmount;
+float idy = (yIcenter - (yIcenter+iRadius)) / (float)iPointAmount;
+float ijdx,ijdy;
+//</Data of the internal lines>
 
-    glMatrixMode(GL_PROJECTION);
+int bleacherX = 0;
+int bleacherY = 0;
 
-    glOrtho(0.0, 768.0, 0.0, 900.0, -1.0, 1.0);
+void drawExternalField() {
 
-}
-
-void display(void) {
-
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    glColor3f(0,1,0);
-
+    glColor3f(0.2,.67,0.2);
     glBegin(GL_POLYGON);
-
     //Draw the first line.
     for (int j = 0; j < pointAmount; ++j) {
         jdx = (j * dx) + xCenter;
@@ -56,19 +61,213 @@ void display(void) {
             glVertex2f(cx,cy);
         }
     }
+    glEnd();
+}
 
+void drawInternalField() {
+
+    glColor3f(.8,.6,.2);
+    glBegin(GL_POLYGON);
+    //Draw the first line.
+    for (int j = 0; j < iPointAmount; ++j) {
+        ijdx = (j * idx) + xIcenter;
+        ijdy = (j * idy) + (yIcenter+iRadius);
+        glVertex2f(ijdx, ijdy);
+    }
+
+    //Draw the half-circle and connect with the first vertex.
+    for (int i = 0; i < pointAmount; ++i) {
+        iTheta = i * (2*PI)/iPointAmount;
+        icx = xIcenter + (iRadius * cos(iTheta));
+        icy = yIcenter + (iRadius * sin(iTheta)) ;
+
+        if (icy <= ijdy) {
+            glVertex2f(icx,icy);
+        }
+    }
+    glEnd();
+}
+
+void drawPitcherGround() {
+    //<Points>
+    int ax = xIcenter;
+    int ay = yIcenter + 25 + iRadius/1.5;
+
+    int bx = xIcenter + iRadius/1.5;
+    int by = yIcenter + 25;
+
+    int cx = xIcenter;
+    int cy = yIcenter + 25 - iRadius/1.5;
+
+    int dx = xIcenter - iRadius/1.5;
+    int dy = yIcenter + 25 ;
+    //</Points>
+
+    int auxx = (bx - ax) / (float)iPointAmount;
+    int auxy = (by - ay) / (float)iPointAmount;
+
+    glColor3f(0.2,.67,0.2);
+    glBegin(GL_POLYGON);
+        for (int j = 0; j < iPointAmount; ++j) {
+            glVertex2f((j * auxx) + ax, (j * auxy) + ay);
+        }
+
+        auxx = (cx - bx) / (float)iPointAmount;
+        auxy = (cy - by) / (float)iPointAmount;
+
+        for (int j = 0; j < iPointAmount; ++j) {
+            glVertex2f((j * auxx) + bx, (j * auxy) + by);
+        }
+
+        auxx = (dx - cx) / (float)iPointAmount;
+        auxy = (dy - cy) / (float)iPointAmount;
+
+        for (int j = 0; j < iPointAmount; ++j) {
+            glVertex2f((j * auxx) + cx, (j * auxy) + cy);
+        }
+
+        auxx = (ax - dx) / (float)iPointAmount;
+        auxy = (ay - dy) / (float)iPointAmount;
+
+        for (int j = 0; j < iPointAmount; ++j) {
+            glVertex2f((j * auxx) + dx, (j * auxy) + dy);
+        }
     glEnd();
 
-    glColor3f(1,0,0);
-    glBegin(GL_LINES);
-    glVertex2i(xCenter,yCenter);
-    glVertex2i(xCenter,yCenter+radius);
+    glColor3f(.8,.6,.2);
+    glBegin(GL_POLYGON);
+        for (int i = 0; i < iPointAmount; ++i) {
+            theta = i * (2*PI)/iPointAmount;
+            glVertex2f(xCenter + (20 * cos(theta)), yCenter+(iRadius/1.7) + (20 * sin(theta)));
+        }
+    glEnd();
+}
+
+void drawHomePlateAndBases() {
+    //<Points>
+    int ax = xIcenter;
+    int ay = yIcenter + 25 + iRadius/1.5;
+
+    int bx = xIcenter + iRadius/1.5;
+    int by = yIcenter + 25;
+
+    int cx = xIcenter;
+    int cy = yIcenter + 25 - iRadius/1.5;
+
+    int dx = xIcenter - iRadius/1.5;
+    int dy = yIcenter + 25 ;
+    //</Points>
+
+    //<Home Plate>
+    glColor3f(.8,.6,.2);
+    glBegin(GL_POLYGON);
+        for (int i = 0; i < iPointAmount; ++i) {
+            theta = i * (2*PI)/iPointAmount;
+            glVertex2f(ax + (30 * cos(theta)), ay + (30 * sin(theta)));
+        }
     glEnd();
 
-    glBegin(GL_LINES);
-    glVertex2i(xCenter,yCenter);
-    glVertex2i(xCenter+radius,yCenter);
+    //</Home Plate>
+
+    //1º Base.
+    glColor3f(.8,.6,.2);
+    glBegin(GL_POLYGON);
+        for (int i = 0; i < iPointAmount; ++i) {
+            theta = i * (2*PI)/iPointAmount;
+            glVertex2f(bx + (20 * cos(theta)), by + (20 * sin(theta)));
+        }
     glEnd();
+
+    //2º Base.
+    glColor3f(.8,.6,.2);
+    glBegin(GL_POLYGON);
+        for (int i = 0; i < iPointAmount; ++i) {
+            theta = i * (2*PI)/iPointAmount;
+            glVertex2f(cx + (20 * cos(theta)), cy + (20 * sin(theta)));
+        }
+    glEnd();
+
+    //3º base.
+    glColor3f(.8,.6,.2);
+    glBegin(GL_POLYGON);
+        for (int i = 0; i < iPointAmount; ++i) {
+            theta = i * (2*PI)/iPointAmount;
+            glVertex2f(dx + (20 * cos(theta)), dy + (20 * sin(theta)));
+        }
+    glEnd();
+
+    glColor3f(1,1,1);
+    glPointSize(10);
+    glBegin(GL_POINTS);
+        glVertex2i((GLint) ax, (GLint) ay);
+        glVertex2i((GLint) bx, (GLint) by);
+        glVertex2i((GLint) cx, (GLint) cy);
+        glVertex2i((GLint) dx, (GLint) dy);
+    glEnd();
+}
+
+void mouseDrawBleacher(GLint button, GLint action, GLint xMouse, GLint yMouse) {
+    if (button == GLUT_LEFT_BUTTON && action == GLUT_DOWN) {
+
+        glColor3f(0,0,1);
+        int dx = xMouse;
+        int dy = 900 - yMouse;
+
+        //cout << dx << endl << dy << endl << endl;
+
+        /*if (bleacherX != 0 && bleacherY != 0) {
+            int auxx = (dx - bleacherX) / (float)iPointAmount;
+            int auxy = (dy - bleacherY) / (float)iPointAmount;
+
+            for (int j = 0; j < iPointAmount; ++j) {
+                glBegin(GL_POINTS);
+                glVertex2f((j * auxx) + bleacherX, (j * auxy) + bleacherY);
+                glEnd();
+            }
+        }
+        int auxx = (dx - bleacherX) / (float)iPointAmount;
+        int auxy = (dy - bleacherY) / (float)iPointAmount;
+
+        glBegin(GL_POINTS);
+        for (int j = 0; j < iPointAmount; ++j) {
+            glVertex2f((j * auxx) + bleacherX, (j * auxy) + bleacherY);
+        }
+        glEnd();
+
+        cout << dx << endl << dy << endl << endl;*/
+
+
+        glBegin(GL_POINTS);
+        glVertex2i(dx, dy);
+        glEnd();
+
+        bleacherX = dx;
+        bleacherY = dy;
+
+
+    }
+
+    glFlush();
+}
+
+void init(void) {
+
+    glClearColor(1.0, 1.0, 1.0, 1.0);
+
+    glMatrixMode(GL_PROJECTION);
+
+    glOrtho(0.0, 768.0, 0.0, 900.0, -1.0, 1.0);
+
+}
+
+void display(void) {
+
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    drawExternalField();
+    drawInternalField();
+    drawPitcherGround();
+    drawHomePlateAndBases();
 
     glutSwapBuffers();
 }
@@ -85,6 +284,7 @@ int main(int argc, char** argv) {
     init();
 
     glutDisplayFunc(display);
+    glutMouseFunc(mouseDrawBleacher);
 
     glutMainLoop();
 
