@@ -10,25 +10,25 @@ int xCenter = 384;
 int yCenter = 580;
 int radius = 270;
 int pointAmount = 1024;
-float theta;
-float cx;
-float cy;
+double theta;
+double cx;
+double cy;
 //</ Data of the external cicle >
 
 //<Data of the external lines>
 float dx = ((xCenter+radius) - xCenter) / (float)pointAmount;
 float dy = (yCenter - (yCenter+radius)) / (float)pointAmount;
-float  jdx,jdy;
+float jdx,jdy;
 //</Data of the external lines>
 
 //< Data of the internal cicle >
 int xIcenter = xCenter;
 int yIcenter = (yCenter+radius)-200;
 int iRadius = 160;
-int iPointAmount = 128;
-float iTheta;
-float icx = 0;
-float icy = 0;
+int iPointAmount = 1024;
+double iTheta;
+double icx = 0;
+double icy = 0;
 //</ Data of the internal cicle >
 
 //<Data of the internal lines>
@@ -39,6 +39,7 @@ float ijdx,ijdy;
 
 int bleacherX = 0;
 int bleacherY = 0;
+int bleacherCount = 0;
 
 void drawExternalField() {
 
@@ -58,7 +59,7 @@ void drawExternalField() {
         cy = yCenter + (radius * sin(theta)) ;
 
         if (cy <= jdy) {
-            glVertex2f(cx,cy);
+            glVertex2i((GLint)cx,(GLint)cy);
         }
     }
     glEnd();
@@ -82,7 +83,7 @@ void drawInternalField() {
         icy = yIcenter + (iRadius * sin(iTheta)) ;
 
         if (icy <= ijdy) {
-            glVertex2f(icx,icy);
+            glVertex2i((GLint)icx,(GLint)icy);
         }
     }
     glEnd();
@@ -209,33 +210,23 @@ void drawHomePlateAndBases() {
 void mouseDrawBleacher(GLint button, GLint action, GLint xMouse, GLint yMouse) {
     if (button == GLUT_LEFT_BUTTON && action == GLUT_DOWN) {
 
-        glColor3f(0,0,1);
+        glPointSize(2);
+        glColor3f(.2,.2,.2);
         int dx = xMouse;
         int dy = 900 - yMouse;
 
-        //cout << dx << endl << dy << endl << endl;
+        if (bleacherX != 0 && bleacherY != 0) {
+            float auxx = (dx - bleacherX) / (float)iPointAmount;
+            float auxy = (dy - bleacherY) / (float)iPointAmount;
 
-        /*if (bleacherX != 0 && bleacherY != 0) {
-            int auxx = (dx - bleacherX) / (float)iPointAmount;
-            int auxy = (dy - bleacherY) / (float)iPointAmount;
-
+            glBegin(GL_POINTS);
             for (int j = 0; j < iPointAmount; ++j) {
-                glBegin(GL_POINTS);
                 glVertex2f((j * auxx) + bleacherX, (j * auxy) + bleacherY);
-                glEnd();
             }
+            glEnd();
+
+            ++bleacherCount;
         }
-        int auxx = (dx - bleacherX) / (float)iPointAmount;
-        int auxy = (dy - bleacherY) / (float)iPointAmount;
-
-        glBegin(GL_POINTS);
-        for (int j = 0; j < iPointAmount; ++j) {
-            glVertex2f((j * auxx) + bleacherX, (j * auxy) + bleacherY);
-        }
-        glEnd();
-
-        cout << dx << endl << dy << endl << endl;*/
-
 
         glBegin(GL_POINTS);
         glVertex2i(dx, dy);
@@ -244,7 +235,11 @@ void mouseDrawBleacher(GLint button, GLint action, GLint xMouse, GLint yMouse) {
         bleacherX = dx;
         bleacherY = dy;
 
-
+        if (bleacherCount > 3) {
+            bleacherX = 0;
+            bleacherY = 0;
+            bleacherCount = 0;
+        }
     }
 
     glFlush();
